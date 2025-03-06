@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chippin - Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container" id="loginForm">
+        <h2>Login</h2>
+
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="4-digit Password" pattern="\d{4}" maxlength="4" required
+            inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+
+        <button id="loginBtn" onclick="login()">Login</button>
+
+        <span class="link" onclick="window.location.href = 'forgotPassword.html'">Forgot Password?</span>
+        <span class="link" onclick="window.location.href = 'register.html';">New user?</span>
+    </div>
+
+    <!-- Loading screen overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+
+    <script src="loadingScreen.js"></script>
+    <script>
+
+        function showForgotPassword() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('forgotPasswordForm').style.display = 'block';
+        }
+
+        async function login() {
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            if (!username) {
+                alert("Required username"); return;
+            }
+            if (password.length !== 4) {
+                alert("Required 4 digit password"); return;
+            }
+            console.log("server login verification pending");
+            showLoading(); // Show loading screen
+            try {
+                const response = await fetch("/users/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert(data.message);
+                    
+                    sessionStorage.setItem("userId", data.user.id); // Store username
+                    sessionStorage.setItem("username", data.user.username);
+
+                    window.location.href = 'groups.html';
+                    // Redirect user or store authentication token
+                } else {
+                    alert(data.message);
+                }
+            }  catch (error) {
+                alert("Error contacting server. Please try again.");
+            } finally {
+                hideLoading(); // Hide loading screen
+            }
+        }
+        
+        async function sendResetOTP() {
+            const username = document.getElementById("forgotUsername").value.trim();
+
+            if (!username) {
+                alert("Required username");
+                return;
+            }
+            document.getElementById('newResetPassword').style.display = 'block';
+            document.getElementById('resetBtn').style.display = 'block';
+            alert('sendResetOTP');
+        }
+        function resetPassword() {
+            alert('Password has been reset. Please check your email confirmation.');
+            showLogin();
+        }
+    </script>
+</body>
+
+</html>

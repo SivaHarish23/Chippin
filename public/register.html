@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register User</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container" id="signupForm">
+        <h2>Sign Up</h2>
+        <input type="text" id="name" placeholder="Full Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="newUsername" placeholder="Username" required>
+        <input type="password" id="newPassword" placeholder="4-digit Password" pattern="\d{4}" maxlength="4" required
+            inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <button onclick="sendOTP()">Register</button>
+        <input type="text" id="otp" placeholder="Enter OTP" style="display: none;">
+        <button onclick="register()" id="registerBtn" style="display: none;">Sign Up</button>
+        <span class="link" onclick="window.location.href = 'login.html'">Back to Login</span>
+    </div>
+
+    <!-- Loading screen overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="loadingScreen.js"></script>
+    <script> 
+
+        const nameEle = document.getElementById("name");
+        const emailEle = document.getElementById("email");
+        const usernameEle = document.getElementById("newUsername");
+        const passwordEle = document.getElementById("newPassword");
+
+        let remainingTime = 500; // 5 minutes
+        let interval;
+        function startTimer() {
+            interval = setInterval(() => {
+                remainingTime--;
+                if (remainingTime <= 0) {
+                    clearInterval(interval);
+                    alert("OTP expired. Request a new one.");
+                    window.location.reload(); // Refresh to enter details again
+                }
+            }, 1000);
+        }
+
+        async function sendOTP() {
+            const name = nameEle.value.trim();
+            const email = emailEle.value.trim();
+            const username = usernameEle.value.trim();
+            const password = passwordEle.value.trim();
+            if (!name) {
+                alert("Enter Name");
+                return;
+            }
+            else if (!email) {
+                alert("Enter Email");
+                return;
+            }
+            else if (!username) {
+                alert("Enter Username");
+                return;
+            }
+            else if (password.length !== 4) {
+                alert("Required 4 digit password"); return;
+            }
+            // alert('OTP sent to email. Enter OTP to proceed.');
+            console.log("server verification pending");
+            showLoading(); // Show loading screen
+            try {
+                const response = await fetch("/users/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, username }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("OTP sent to your email. Enter it within 5 minutes.");
+                    console.log("Server Verification DONE!");
+                    document.getElementById('otp').style.display = 'inline-block';
+                    document.getElementById('registerBtn').style.display = 'block';
+
+                    startTimer();
+
+                    nameEle.readOnly = true;
+                    emailEle.readOnly = true;
+                    usernameEle.readOnly = true;
+                    passwordEle.readOnly = true;
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert("Error contacting server. Please try again.");
+            } finally {
+                hideLoading(); // Hide loading screen
+            }
+        }
+
+        async function register() {
+            const name = nameEle.value.trim();
+            const email = emailEle.value.trim();
+            const username = usernameEle.value.trim();
+            const password = passwordEle.value.trim();
+            const otp = document.getElementById("otp").value.trim();
+
+            if (!otp) {
+                alert("Enter OTP!");
+                return;
+            }
+
+            showLoading(); // Show loading screen
+
+            try {
+                const response = await fetch("/users/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, username, password, otp }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    clearInterval(interval);
+                    alert("Registration successful!");
+                    window.location.href = 'login.html';
+                } else if (response.status === 410) {
+                    // OTP expired
+                    alert("OTP expired. Request a new one.");
+                    document.getElementById("otp").value = "";
+                    document.getElementById("otp").style.display = "none";
+                    document.getElementById("registerBtn").style.display = "none";
+                } else if (response.status === 401) {
+                    // Incorrect OTP
+                    alert(data.message);
+                    document.getElementById("otp").value = "";
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert("Error connecting to server.");
+            } finally {
+                hideLoading(); // Hide loading screen
+            }
+        }
+    </script>
+</body>
+
+</html>

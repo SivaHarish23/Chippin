@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groups</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container containerBG">
+        <header class="groupsHeader">
+            <i class="fa fa-arrow-left back-button" onclick="window.history.back();"></i>
+            <h2>Groups</h2>
+            <div class="createJoin">
+                <button onclick="openPopup('create')">Create</button>
+                <button onclick="openPopup('join')">Join</button>
+            </div>
+        </header>
+
+        <!-- Popup Container -->
+        <div id="popup" class="popup">
+            <div class="popup-content">
+                <span class="close-btn" onclick="closePopup()">&times;</span>
+                <div id="popup-body"></div>
+            </div>
+        </div>
+
+        <main>
+            <h3>Groups You're In</h3>
+            <ul id="groupList"></ul>
+        </main>
+
+    </div>
+
+    <script>
+
+
+        // document.addEventListener("DOMContentLoaded", loadGroups);
+
+        function openPopup(type) {
+            let popupBody = document.getElementById('popup-body');
+
+
+            if (type === 'create') {
+                popupBody.innerHTML = `
+            <h3>Create Group</h3>
+            <input type="text" id="groupName" placeholder="Enter Group Name">
+            <button onclick="createGroup()">Create Group</button>
+        `;
+            } else if (type === 'join') {
+                popupBody.innerHTML = `
+            <h3>Join Group</h3>
+            <input type="text" id="groupCode" placeholder="Enter Group Code">
+            <button onclick="joinGroup()">Join Group</button>
+        `;
+            }
+
+            document.getElementById('popup').style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
+        async function createGroup() {
+            const groupName = document.getElementById("groupName").value.trim();
+            if (!groupName) {
+                alert("Enter a group name");
+                return;
+            }
+            alert('Group Created: ' + groupName +" User ID :" + sessionStorage.getItem("userId"));
+            
+            closePopup();
+
+            // try {
+            //     const response = await fetch("http://localhost:5000/groups/d", {
+            //         method: "POST",
+            //         headers: { "Content-Type": "application/json" },
+            //         body: JSON.stringify({ groupName, username: "current_user" })
+            //     });
+
+            //     const data = await response.json();
+            //     if (response.ok) {
+            //         alert("Group created successfully");
+            //         loadGroups();
+            //     } else {
+            //         alert(data.message);
+            //     }
+            // } catch (error) {
+            //     alert("Error creating group");
+            // }
+        }
+
+        async function joinGroup() {
+
+            const groupCode = document.getElementById("groupCode").value.trim();
+            if (!groupCode) {
+                alert("Enter a group code");
+                return;
+            }
+            alert('Joined Group: ' + groupCode);
+            closePopup();
+
+            // try {
+            //     const response = await fetch("http://localhost:5000/groups/join", {
+            //         method: "POST",
+            //         headers: { "Content-Type": "application/json" },
+            //         body: JSON.stringify({ groupCode, username: "current_user" })
+            //     });
+
+            //     const data = await response.json();
+            //     if (response.ok) {
+            //         alert("Joined group successfully");
+            //         loadGroups();
+            //     } else {
+            //         alert(data.message);
+            //     }
+            // } catch (error) {
+            //     alert("Error joining group");
+            // }
+        }
+
+        async function loadGroups() {
+            try {
+                const response = await fetch("http://local5000host:/groups/list?username=current_user");
+                const groups = await response.json();
+
+                const groupList = document.getElementById("groupList");
+                groupList.innerHTML = "";
+
+                groups.forEach(group => {
+                    const li = document.createElement("li");
+                    li.textContent = group.name;
+                    groupList.appendChild(li);
+                });
+            } catch (error) {
+                alert("Error loading groups");
+            }
+        }
+    </script>
+</body>
+
+</html>
