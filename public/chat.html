@@ -43,15 +43,42 @@
         document.getElementById('chatGroupName').innerHTML = currentGroup ? currentGroup.group_name : "No group selected";
 
 
-
-        function appendMessage(message, type) {
+        function appendMessage(messageData, type) {
             const chatBox = document.getElementById("chatBox");
             const messageDiv = document.createElement("div");
             messageDiv.classList.add("message", type);
-            messageDiv.textContent = message;
+
+            // Sender Name (only for received messages)
+            if (type === "received") {
+                const senderName = document.createElement("span");
+                senderName.classList.add("sender-name");
+                senderName.textContent = messageData.username || "Unknown";
+                messageDiv.appendChild(senderName);
+            }
+
+            // Message Content
+            const messageContent = document.createElement("p");
+            messageContent.textContent = messageData.message;
+            messageDiv.appendChild(messageContent);
+
+            // Message Info (Timestamp)
+            const messageInfo = document.createElement("div");
+            messageInfo.classList.add("message-info");
+
+            // Format time as hh:mm
+            const time = document.createElement("span");
+            time.classList.add("timestamp");
+            const date = new Date(messageData.time);
+            time.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            messageInfo.appendChild(time);
+            messageDiv.appendChild(messageInfo);
+
             chatBox.appendChild(messageDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
+
+
 
         function sendMessage() {
             const input = document.getElementById("messageInput");
@@ -80,7 +107,7 @@
         socket.on("receiveMessage", (messageData) => {
             console.log("Received message:", messageData);
             if (messageData.group_id === currentGroup.id) {
-                appendMessage(messageData.message, messageData.user_id == userId ? "sent" : "received");
+                appendMessage(messageData, messageData.user_id == userId ? "sent" : "received");
             }
         });
 
@@ -92,7 +119,7 @@
                 const messages = await response.json();
                 console.log("Loaded messages:", messages.messages);
                 messages.messages.forEach(msg =>
-                    appendMessage(msg.message, msg.user_id == userId ? "sent" : "received")
+                    appendMessage(msg, msg.user_id == userId ? "sent" : "received")
                 );
             } catch (error) {
                 console.error("Error loading messages:", error);
