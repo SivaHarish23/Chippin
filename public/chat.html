@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Chat</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+
+
+    <link rel="stylesheet" href="chat.css">
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <i class="fa fa-arrow-left back-button" onclick="window.history.back();"></i>
+            <span id="chatGroupName">Hello</span>
+            <div class="groupHeaderRight">
+                <button onclick="">Info</button>
+            </div>
+        </div>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="chat-input">
+            <textarea id="messageInput" placeholder="Type a message..." oninput="adjustChatContainer()"
+                onblur="resetTextareaHeight()"></textarea>
+            <button onclick="sendMessage()">&#9658;</button>
+        </div>
+    </div>
+
+    <script>
+        const socket = io(window.location.origin);
+
+        let userId = sessionStorage.getItem("userId");
+        let userName = sessionStorage.getItem("username");
+        const currentGroup = JSON.parse(sessionStorage.getItem("selectedGroup"));
+
+        console.log(userId);
+        console.log(userName);
+        console.log(currentGroup);
+        document.getElementById('chatGroupName').innerHTML = currentGroup ? currentGroup.group_name : "No group selected";
+
+
+
+        function appendMessage(message, type) {
+            const chatBox = document.getElementById("chatBox");
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", type);
+            messageDiv.textContent = message;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("messageInput");
+            const text = input.value.trim();
+            if (text !== "" && currentGroup) {
+                const messageData = {
+                    type: "normal",
+                    message: text,
+                    user_id: userId,
+                    group_id: currentGroup.id
+                };
+
+                // Emit message and wait for acknowledgment before appending
+                socket.emit("sendMessage", messageData, (ack) => {
+                    if (!ack.success) {
+                        console.error("Message failed to send");
+                    }
+                });
+
+                input.value = "";
+                resetTextareaHeight();
+            }
+        }
+
+        // Listen for incoming messages in real time
+        socket.on("receiveMessage", (messageData) => {
+            console.log("Received message:", messageData);
+            if (messageData.group_id === currentGroup.id) {
+                appendMessage(messageData.message, messageData.user_id == userId ? "sent" : "received");
+            }
+        });
+
+        async function loadMessages() {
+            if (!currentGroup) return;
+            socket.emit("joinGroup", currentGroup.id);
+            try {
+                const response = await fetch(`/chat/${currentGroup.id}`);
+                const messages = await response.json();
+                console.log("Loaded messages:", messages.messages);
+                messages.messages.forEach(msg =>
+                    appendMessage(msg.message, msg.user_id == userId ? "sent" : "received")
+                );
+            } catch (error) {
+                console.error("Error loading messages:", error);
+            }
+        }
+
+
+        function adjustChatContainer() {
+            const chatContainer = document.querySelector('.chat-container');
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => {
+                    const viewportHeight = window.visualViewport.height;
+                    chatContainer.style.height = `${viewportHeight}px`;
+                });
+            }
+        }
+
+        // Call this function when the page loads
+        adjustChatContainer();
+
+        function resetTextareaHeight() {
+            const textarea = document.getElementById("messageInput");
+            textarea.style.height = "20px";
+        }
+
+        window.onload = loadMessages;
+    </script>
+</body>
+
+</html>

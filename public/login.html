@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chippin - Login</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body{
+            height: 100svh;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,7 +21,7 @@
         <input type="password" id="password" placeholder="4-digit Password" pattern="\d{4}" maxlength="4" required
             inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
 
-        <button id="loginBtn" onclick="login()">Login</button>
+        <button id="loginBtn" onclick="login()" style="width: 100%;">Login</button>
 
         <span class="link" onclick="window.location.href = 'forgotPassword.html'">Forgot Password?</span>
         <span class="link" onclick="window.location.href = 'register.html';">New user?</span>
@@ -61,7 +66,7 @@
                     
                     sessionStorage.setItem("userId", data.user.id); // Store username
                     sessionStorage.setItem("username", data.user.username);
-
+                    
                     window.location.href = 'groups.html';
                     // Redirect user or store authentication token
                 } else {
