@@ -57,9 +57,10 @@ router.get("/loadGroups", async (req, res) => {
     try {
         const groups = await pool.query(
             `SELECT g.* 
-             FROM groups g
-             JOIN group_members gm ON g.id = gm.group_id
-             WHERE gm.user_id = $1`,
+            FROM groups g
+            JOIN group_members gm ON g.id = gm.group_id
+            WHERE gm.user_id = $1
+            ORDER BY g.created_at DESC`,
             [userId]
         );
         console.log(groups.rows);
@@ -109,6 +110,26 @@ router.post("/joinGroup", async (req, res) => {
     } catch (err) {
         console.error("Error joining group:", err);
         res.status(500).json({ message: "Internal Server Error: " + err });
+    }
+});
+
+router.get("/loadGroupMembers", async (req, res) => {
+    const { group_id } = req.query; // Use query params instead of body for GET request
+    if (!group_id) {
+        return res.status(400).json({ message: "Group ID is required" });
+    }
+    try {
+        const groupMembers = await pool.query(
+            `SELECT gm.user_id, gm.type, u.name, u.username, u.created_at, u.groups 
+            FROM group_members gm JOIN users u on gm.user_id = u.id 
+            WHERE group_id = $1`,
+            [group_id]
+        );
+        console.log(groupMembers.rows);
+        res.json(groupMembers.rows); // Send the fetched groups data to the client
+    } catch (error) {
+        console.error("Error fetching groups:", error);
+        res.status(500).json({ message: "Internal server error: " + error });
     }
 });
 

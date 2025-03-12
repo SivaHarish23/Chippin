@@ -104,7 +104,12 @@ body {
     cursor: pointer;
 }
 
-
+.back-button {
+    position: absolute;
+    left: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
 
 .groupHeaderRight {
     position: absolute;

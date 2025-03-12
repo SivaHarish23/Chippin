@@ -9,6 +9,7 @@ const pool = require("./config/dbConfig"); // PostgreSQL connection
 const authRoutes = require("./routes/authRoutes");
 const groupRoutes = require("./routes/groupsRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const expenseRoutes = require("./routes/expenseRoute");
 
 const app = express();
 const server = http.createServer(app);
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 app.use("/users", authRoutes);
 app.use("/groups", groupRoutes);
 app.use("/chat", chatRoutes);
+app.use("/expense",expenseRoutes);
 
 // 🚀 WebSocket Server Setup
 const io = new Server(server, {
@@ -43,15 +45,19 @@ io.on("connection", (socket) => {
     });
     
     // 📩 Listen for new messages from clients
-    socket.on("sendMessage", async ({ type, message, user_id, group_id } , callback) => {
+    socket.on("sendMessage", async ({ type, message, user_id, username , userFullName, group_id } , callback) => {
         try {
             const query = `
                 INSERT INTO CHAT (type, message, user_id, group_id) 
                 VALUES ($1, $2, $3, $4) RETURNING *;
             `;
-            const values = [type || "normal", message, user_id, group_id];
+            const values = [type || "normal", message, user_id , group_id];
             const result = await pool.query(query, values);
             const newMessage = result.rows[0];
+
+            console.log("newMsg : " + newMessage);
+            newMessage.username = username;
+            newMessage.userFullName = userFullName;
 
             io.to(group_id).emit("receiveMessage", newMessage); // Send message to group
             // Acknowledge successful message sending
