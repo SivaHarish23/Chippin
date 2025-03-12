@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Expense</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/footer.css">
+    <link rel="stylesheet" href="./css/addExpense.css">
+    <script src="https://kit.fontawesome.com/49bafbd5a4.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <i class="fa fa-arrow-left back-button" onclick="window.history.back();"></i>
+
+            <h2>Log Expense</h2>
+        </div>
+
+
+        <form id="expenseForm">
+            <div class="groupSelectDiv">
+                <label for="groupSelect">Select Group:</label>
+                <select id="groupSelect" required>
+                    <option value="" disabled selected>Loading groups...</option>
+                </select>
+            </div>
+
+            <input type="number" id="amount" step="0.01" required placeholder="Amount(Rs)" style="text-align: center;">
+            <div class="descCategory" style="display: flex;">
+                <!-- <label>Description:</label> -->
+                <input type="text" id="description" placeholder="Description" required>
+                <!-- <label>Category:</label> -->
+                <input type="text" id="category" placeholder="Category" required>
+
+            </div>
+
+            <label>Split Type:</label>
+            <div class="split-options" style="display: flex;">
+                <label><input type="radio" name="splitType" value="none" checked>None</label>
+                <label><input type="radio" name="splitType" value="equal">Equal</label>
+                <label><input type="radio" name="splitType" value="custom">Custom</label>
+                <!-- <label><input type="radio" name="splitType" value="percentage">Percentage</label> -->
+            </div>
+
+            <div id="splitTableContainer" class="hidden">
+                <h3>Select Members:</h3>
+                <div class="select-buttons">
+                    <button type="button" id="selectAll">Select All</button>
+                    <button type="button" id="deselectAll">Deselect All</button>
+                </div>
+                <table id="splitTable">
+                    <thead>
+                        <tr>
+                            <!-- <th>Select</th>
+                            <th>Member</th>
+                            <th>Per Share (Rs)</th> -->
+                        </tr>
+                    </thead>
+                    <tbody id="splitTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="splitDetails" class="hidden"></div>
+
+            <button id="log-expense-btn">Log Expense</button>
+        </form>
+    </div>
+
+
+
+    <!-- Loading screen overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    <script src="loadingScreen.js"></script>
+
+    <script src="addExpense.js"></script>
+</body>
+
+</html>

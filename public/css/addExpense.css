@@ -1,0 +1,159 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background: #f4f4f4;
+}
+
+.container {
+    width: 90%;
+    max-width: 400px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+.header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.header h2 {
+    text-align: center;
+    margin: 0;
+}
+
+.header .back-button {
+    position: absolute;
+    left: 20px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.groupSelectDiv{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.groupSelectDiv label{
+    margin: 0;
+    width: fit-content;
+}
+.groupSelectDiv select{
+    font-size: 16px;
+    padding: 5px;
+    width: 55%;
+}
+.descCategory {
+    display: flex;
+    justify-content: space-around;
+}
+
+.descCategory input {
+    width: 40%;
+}
+
+label,
+input,
+button {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+input,
+select {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+.hidden {
+    display: none;
+}
+
+.split-options label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    
+}
+
+table,
+th,
+td {
+    border: 1px solid #ccc;
+}
+
+th,
+td {
+    padding: 8px;
+    text-align: center;
+}
+
+.select-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 5px;
+}
+
+.select-buttons button {
+    width: 25%;
+    font-size: 0.7rem;
+}
+
+#splitTableContainer {
+    margin-top: 10px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.7rem;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+.hidden {
+    display: none;
+}
+table input{
+    font-size: 0.7rem;
+}
+
+.lock-btn{
+    background-color: grey;
+}

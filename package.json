@@ -11,10 +11,12 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "nodemailer": "^6.10.0",
     "path": "^0.12.7",
-    "pg": "^8.13.3"
+    "pg": "^8.13.3",
+    "socket.io": "^4.8.1"
   }
 }
