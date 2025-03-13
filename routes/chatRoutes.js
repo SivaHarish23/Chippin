@@ -62,17 +62,17 @@ router.delete("/delete", async (req, res) => {
     try {
         await pool.query("BEGIN"); // Start transaction
 
-        // Delete related records from `splits`
-        await pool.query(
-            "DELETE FROM splits WHERE expense_id IN (SELECT id FROM expenses WHERE chat_id = $1);",
-            [chat_id]
-        );
+        // // Delete related records from `splits`
+        // await pool.query(
+        //     "DELETE FROM splits WHERE expense_id IN (SELECT id FROM expenses WHERE chat_id = $1);",
+        //     [chat_id]
+        // );
 
-        // Delete related records from `expenses`
-        await pool.query(
-            "DELETE FROM expenses WHERE chat_id = $1;",
-            [chat_id]
-        );
+        // // Delete related records from `expenses`
+        // await pool.query(
+        //     "DELETE FROM expenses WHERE chat_id = $1;",
+        //     [chat_id]
+        // );
 
         // Delete the chat message
         const result = await pool.query(
