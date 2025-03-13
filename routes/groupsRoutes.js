@@ -45,7 +45,7 @@ router.post("/create", async (req, res) => {
         res.status(201).json({ message: "Group created successfully", group: newGroup.rows[0] });
     } catch (err) {
         console.error("Error creating group:", err);
-        res.status(500).json({ message: "Internal Server Error : " + err });
+        res.status(500).json({ message: "Internal Server Error : " , err });
     }
 });
 
@@ -67,7 +67,7 @@ router.get("/loadGroups", async (req, res) => {
         res.json(groups.rows); // Send the fetched groups data to the client
     } catch (error) {
         console.error("Error fetching groups:", error);
-        res.status(500).json({ message: "Internal server error: " + error });
+        res.status(500).json({ message: "Internal server error: " , error });
     }
 });
 
@@ -109,7 +109,7 @@ router.post("/joinGroup", async (req, res) => {
         res.status(201).json({ message: `You have successfully joined '${groupName}'` });
     } catch (err) {
         console.error("Error joining group:", err);
-        res.status(500).json({ message: "Internal Server Error: " + err });
+        res.status(500).json({ message: "Internal Server Error: " , err });
     }
 });
 
@@ -129,7 +129,7 @@ router.get("/loadGroupMembers", async (req, res) => {
         res.json(groupMembers.rows); // Send the fetched groups data to the client
     } catch (error) {
         console.error("Error fetching groups:", error);
-        res.status(500).json({ message: "Internal server error: " + error });
+        res.status(500).json({ message: "Internal server error: " , error });
     }
 });
 

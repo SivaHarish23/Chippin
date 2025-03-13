@@ -13,18 +13,36 @@ router.get("/chippin" , (req, res) => {
 router.post("/login", async (req, res) => {
     const { username, password } = req.body;
     try {
+        console.log("Login request received for:", username);
+
         const userResult = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
-        if (userResult.rows.length === 0) {
+
+        console.log("Database query result:", userResult);
+
+        if (!userResult.rows.length) {
             return res.status(400).json({ message: "Username not found!" });
         }
+
         const user = userResult.rows[0];
+
         if (user.password !== password) {
             return res.status(400).json({ message: "Invalid password!" });
         }
-        res.status(200).json({ message: "Login successful", user: { id: user.id, username: user.username , userFullName : user.name} });
+
+        res.status(200).json({ 
+            message: "Login successful", 
+            user: { id: user.id, username: user.username, userFullName: user.name } 
+        });
+
     } catch (error) {
-        console.error("Error during login:", error);
-        res.status(500).json({ message: "Server error : " + error });
+        console.error("❌ Error during login:", error);
+
+        // Log the error details
+        if (error instanceof AggregateError) {
+            error.errors.forEach((err, index) => console.error(`Error ${index + 1}:`, err));
+        }
+
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 });
 
@@ -92,7 +110,7 @@ router.post("/forgotPassword" , async (req , res) => {
         await sendOTP(emailStore[username]);
         res.status(200).json({ message: "OTP sent to email!" });
     } catch(error){
-        console.log("Error during forgot password verification : " + error);
+        console.log("Error during forgot password verification : " , error);
         res.status(500).json({ message: error });
     }
 });

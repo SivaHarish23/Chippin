@@ -91,7 +91,7 @@ router.delete("/delete", async (req, res) => {
     } catch (error) {
         await pool.query("ROLLBACK"); // Rollback in case of error
         console.error("Error deleting chat:", error);
-        res.status(500).json({ error: "Internal Server Error : " + error });
+        res.status(500).json({ error: "Internal Server Error : " , error });
     }
 });
 
