@@ -41,6 +41,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         currentGroupId = this.value;
         console.log("Selected Group ID:", currentGroupId);
         sessionStorage.setItem('group_id', currentGroupId);
+        
         console.log("fetching group members");
         showLoading();
 
@@ -538,52 +539,7 @@ ${splitSummary ? splitSummary : "Not Applicable"}
         alert("Something went wrong! Please try again. : " + error);
     } finally {
         hideLoading();
+        window.location.reload();
     }
-
-    // try {
-    //     const response = await fetch("/expense/logExpense", {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json"
-    //         },
-    //         body: JSON.stringify(expenseData)
-    //     });
-
-    //     const result = await response.json();
-    //     if (response.ok) {
-    //         alert("✅ Expense logged successfully!");
-    //         // window.location.reload(); // Refresh the page or redirect if needed
-    //         console.log("msg:", message);
-    //         fetch("/chat/send", {
-    //             method: "POST",
-    //             headers: {
-    //                 "Content-Type": "application/json"
-    //             },
-    //             body: JSON.stringify(message)
-    //         })
-    //             .then(response => response.json())
-    //             .then(data => console.log("Message sent:", data))
-    //             .catch(error => console.error("Error:", error));
-    //         const chatResponse = await fetch("/chat/send", {
-    //             method: "POST",
-    //             headers: {
-    //                 "Content-Type": "application/json"
-    //             },
-    //             body: JSON.stringify(message)
-    //         })
-    //         const chatResult = await chatResponse.json();
-    //         if (chatResponse.ok) {
-    //             console.log(chatResult);
-
-    //         }
-    //     } else {
-    //         alert("Error: " + result.error);
-    //     }
-    // } catch (error) {
-    //     console.error("Error logging expense:", error);
-    //     alert("Something went wrong! Please try again. : " + error);
-    // }
-
-
 
 });

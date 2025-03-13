@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Info</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <link rel="stylesheet" href="./css/info.css">
+</head>
+
+<body>
+    <div class="infoContainer">
+        <div class="info-header">
+            <i class="fa fa-arrow-left back-button" onclick="window.history.back();"></i>
+            <span>Group Info</span>
+        </div>
+
+        <div class="group-meta">
+            <p><strong>Group:</strong> <span id="groupName">Null</span></p>
+            <p><strong>Group Code:</strong> <span id="groupCode">Null</span></p>
+            <p><strong>Total Expenses:</strong> ₹<span id="totalExpenses">Null</span></p>
+            <p><strong>Total Members:</strong> <span id="totalMembers">Null</span></p>
+            <p><strong>Created On:</strong> <span id="createdOn">Null</span></p>
+            <p><strong>Created By:</strong> <span id="createdBy">Null</span></p>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Paid (₹)</th>
+                        <th>Share (₹)</th>
+                        <th>Balance (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseTable">
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="settlements">
+            <h3>Settlement Suggestions</h3>
+            <ul id="settlementList"></ul>
+        </div>
+
+    </div>
+
+
+
+    <!-- Loading screen overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    <script src="loadingScreen.js"></script>
+    <script>
+        let userId = sessionStorage.getItem("userId");
+        let userName = sessionStorage.getItem("username");
+        const currentGroup = JSON.parse(sessionStorage.getItem("selectedGroup"));
+
+        console.log(userId);
+        console.log(userName);
+        console.log(currentGroup);
+
+
+        document.addEventListener("DOMContentLoaded", async function () {
+
+            updateGroupMeta(currentGroup);
+
+            console.log("fetching group members");
+            showLoading();
+
+            try {
+                const response = await fetch(`/groups/loadGroupMembers?group_id=${currentGroup.id}`);
+                groupMembers = await response.json();
+                console.log("group members : ");
+                console.log(groupMembers);
+
+                const host = groupMembers.find(member => member.type === "host");
+                console.log(host ? host.name : "No host found");
+
+                document.getElementById("createdBy").textContent = host.name || "Null";
+
+            } catch (error) {
+                console.error("Error fetching groups members:", error);
+                alert("Error fetching group members : " + error);
+            } finally {
+                hideLoading(); // Hide loading screen
+            }
+
+            console.log("fetching group info details");
+            showLoading();
+            try {
+                const response = await fetch(`/expense/groupInfo?group_id=${currentGroup.id}`)
+                const groupInfo = await response.json();
+                console.log("group info : ");
+                console.log(groupInfo);
+
+                const totalPaid = groupInfo.reduce((sum, user) => sum + user.paid, 0);
+                console.log(totalPaid);
+
+                document.getElementById("totalExpenses").textContent = totalPaid;
+
+                calculateBalances(groupInfo);
+            } catch (error) {
+                console.error("Error fetching groups info:", error);
+                alert("Error fetching group info : " + error);
+            } finally {
+                hideLoading(); // Hide loading screen
+            }
+
+        });
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString("en-GB"); // Format: DD/MM/YYYY
+        }
+
+        // Function to populate the data into the HTML
+        function updateGroupMeta(data) {
+            document.getElementById("groupName").textContent = data.group_name || "Null";
+            document.getElementById("groupCode").textContent = data.group_code || "Null";
+            document.getElementById("totalMembers").textContent = data.no_of_members || "Null";
+            document.getElementById("createdOn").textContent = data.created_at ? formatDate(data.created_at) : "Null";
+
+        }
+
+
+        function calculateBalances(members) {
+            let tableBody = "";
+            let balances = [];
+
+            members.forEach(member => {
+                let balance = parseFloat((member.paid - member.share).toFixed(2));
+                console.log(balance);
+                balances.push({ name: member.name, balance });
+
+                tableBody += `
+                    <tr>
+                        <td>${member.name}</td>
+                        <td>₹${member.paid}</td>
+                        <td>₹${member.share}</td>
+                        <td class="${balance >= 0 ? 'positive' : 'negative'}">₹${balance}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("expenseTable").innerHTML = tableBody;
+            calculateSettlements(balances);
+        }
+
+        function calculateSettlements(balances) {
+            let creditors = balances.filter(m => m.balance > 0).sort((a, b) => b.balance - a.balance);
+            let debtors = balances.filter(m => m.balance < 0).sort((a, b) => a.balance - b.balance);
+
+            let settlementList = "";
+
+            while (debtors.length && creditors.length) {
+                let debtor = debtors[0];
+                let creditor = creditors[0];
+
+                let amount = Math.min(Math.abs(debtor.balance), creditor.balance);
+
+                settlementList += `<li>${debtor.name} → ${creditor.name}: ₹${amount}</li>`;
+
+                debtor.balance = parseFloat((debtor.balance + amount).toFixed(2)); // Ensure balance remains rounded
+                creditor.balance = parseFloat((creditor.balance - amount).toFixed(2)); // Ensure balance remains rounded
+
+
+                if (debtor.balance === 0) debtors.shift();
+                if (creditor.balance === 0) creditors.shift();
+            }
+
+            document.getElementById("settlementList").innerHTML = settlementList;
+        }
+
+
+    </script>
+</body>
+
+</html>

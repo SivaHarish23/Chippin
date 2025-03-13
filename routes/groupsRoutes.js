@@ -125,7 +125,7 @@ router.get("/loadGroupMembers", async (req, res) => {
             WHERE group_id = $1`,
             [group_id]
         );
-        console.log(groupMembers.rows);
+        // console.log(groupMembers.rows);
         res.json(groupMembers.rows); // Send the fetched groups data to the client
     } catch (error) {
         console.error("Error fetching groups:", error);
