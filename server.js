@@ -69,10 +69,10 @@ io.on("connection", (socket) => {
     });
 
     // 📢 User joins a group
-    socket.on("joinGroup", (groupId) => {
-        socket.join(groupId);
-        console.log(`User ${socket.id} joined group ${groupId}`);
-    });
+    // socket.on("joinGroup", (groupId) => {
+    //     socket.join(groupId);
+    //     console.log(`User ${socket.id} joined group ${groupId}`);
+    // });
 
     socket.on("disconnect", () => {
         console.log("A user disconnected:", socket.id);
