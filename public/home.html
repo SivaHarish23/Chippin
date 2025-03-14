@@ -1,16 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="./css/styles.css">
-    <link rel="stylesheet" href="./css/footer.css">
+    <!-- <link rel="stylesheet" href="./css/styles.css"> -->
+    <!-- <link rel="stylesheet" href="./css/footer.css"> -->
     <script src="https://kit.fontawesome.com/49bafbd5a4.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="./css/home.css">
 </head>
+
 <body>
     <div class="container containerBG">
+
+        <div class="home">
+            <div class="topHalf">
+                <div class="header">
+                    <h2>👋 Welcome, <span id="username">User</span>!</h2>
+                    <p>Chippin – Smart & Simple Expense Sharing for Every Trip! 🚀</p>
+                </div>
+
+                <div class="summary">
+                    <div class="owe box">
+                        <h2>You Owe</h2>
+                        <p>You should pay others</p>
+                        <div class="boxAmount">
+                            <span>Rs. </span>
+                            <span id="owe">0.00</span>
+                        </div>
+                    </div>
+                    <div class="owed box">
+                        <h2>You Owed</h2>
+                        <p>Others should pay you</p>
+                        <div class="boxAmount">
+                            <span>Rs. </span>
+                            <span id="owed">0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- <p>Total Paid: ₹<span id="totalPaid">0.00</span></p>
+                    <p>Amount to Get: ₹<span id="amountToGet">0.00</span></p> -->
+                </div>
+
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paid By</th>
+                            <th>Amount</th>
+                            <th>My Share</th>
+                            <th>Group Name</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseTableBody">
+                        <!-- Data will be inserted here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
         <!-- Popup Container -->
         <div id="popup" class="popup">
             <div class="popup-content">
@@ -28,5 +80,92 @@
         </div>
 
     </div>
+
+    <!-- Loading screen overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    <script src="loadingScreen.js"></script>
+    <script>
+        let expenseData = [
+            { "expense_id": 4, "time": "02:10", "date": "14/03/2025", "user_id": 1, "username": "sadasd", "userfullname": "SivaHarish", "Amount": "50.00", "My Share": "0", "group_id": 1, "groupname": "MyTrip2025", "chat_id": 22 },
+            { "expense_id": 3, "time": "02:09", "date": "14/03/2025", "user_id": 1, "username": "asd", "userfullname": "SivaHarish", "Amount": "20.00", "My Share": "0", "group_id": 1, "groupname": "MyTrip2025", "chat_id": 21 },
+            { "expense_id": 2, "time": "17:51", "date": "13/03/2025", "user_id": 2, "username": "dwgwe", "userfullname": "Abishek Ram", "Amount": "180.00", "My Share": "90.00", "group_id": 1, "groupname": "MyTrip2025", "chat_id": 13 },
+            { "expense_id": 1, "time": "17:47", "date": "13/03/2025", "user_id": 1, "username": "asdq", "userfullname": "SivaHarish", "Amount": "5000.00", "My Share": "2500.00", "group_id": 1, "groupname": "MyTrip2025", "chat_id": 5 }
+        ];
+        const currentUserId = sessionStorage.getItem("userId");
+        const currentUserName = sessionStorage.getItem("username");
+        const currentUserFullName = sessionStorage.getItem("userFullName");
+        document.addEventListener("DOMContentLoaded", async function () {
+
+            // currentUserId = sessionStorage.getItem("userId");
+            // currentUserName = sessionStorage.getItem("username");
+            // currentUserFullName = sessionStorage.getItem("userFullName");
+            // console.log("currentUser : " + currentUserId + " | " + currentUserName + " | " + currentUserFullName);
+
+            await getData();
+        });
+        async function getData() {
+            showLoading();
+            try {
+                const response = await fetch(`/expense/personalExpense?user_id=${currentUserId}`);
+                expenseData = await response.json();             
+            } catch (error) {
+                console.error("Error getting personal expense", error);
+                alert("Error getting personal expense : ", error);
+            } finally {
+                hideLoading(); // Hide loading screen
+            }
+            showLoading();
+            try{
+                const oweResponse = await fetch(`expense/oweDetails?user_id=${currentUserId}`);
+                oweDetails = await oweResponse.json();
+
+                document.getElementById("owe").innerHTML = parseFloat(oweDetails.owes_others).toFixed(2) || 0.00;
+                document.getElementById("owed").innerHTML = parseFloat(oweDetails.others_owe).toFixed(2) || 0.00;
+            }catch (error) {
+                console.error("Error getting owe details", error);
+                alert("Error : getting owe details", error);
+            } finally {
+                hideLoading(); // Hide loading screen
+            }
+
+            // Set username dynamically
+            const currentUser = currentUserFullName;
+            document.getElementById("username").textContent = currentUser;
+
+            let totalPaid = 0, totalToGet = 0;
+
+            // Sort by Date & Time (Latest First)
+            expenseData.sort((a, b) => {
+                const dateA = new Date(a.date.split('/').reverse().join('-') + 'T' + a.time);
+                const dateB = new Date(b.date.split('/').reverse().join('-') + 'T' + b.time);
+                return dateB - dateA;
+            });
+
+            // Render Table Data
+            const tableBody = document.getElementById("expenseTableBody");
+            expenseData.forEach(exp => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                <td>${exp.userfullname}</td>
+                <td>₹${exp.Amount}</td>
+                <td>₹${exp["My Share"] === "0" ? exp.Amount : exp["My Share"]}</td>
+                <td>${exp.groupname}</td>
+                `;
+                tableBody.appendChild(row);
+
+                // Calculate totals
+                if (exp.userfullname === currentUser) {
+                    totalPaid += parseFloat(exp.Amount);
+                }
+                if (exp["My Share"] !== "0") {
+                    totalToGet += parseFloat(exp["My Share"]);
+                }
+            });
+        }
+    </script>
 </body>
+
+
 </html>

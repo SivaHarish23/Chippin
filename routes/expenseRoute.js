@@ -66,7 +66,8 @@ router.get("/groupInfo", async (req, res) => {
             username: member.username,
             name: member.name,
             paid: 0.00,
-            share: 0.00
+            share: 0.00,
+            personal : 0.00
         }));
 
         console.log("members");
@@ -84,7 +85,7 @@ router.get("/groupInfo", async (req, res) => {
         // Update members with paid amount
         paidResult.rows.forEach(expense => {
             const member = members.find(m => m.user_id === expense.paid_by);
-            if (member) {
+            if (member && member.split_type !== 'none') {
                 member.paid += parseFloat(expense.total_paid) || 0;
             }
         });
@@ -128,6 +129,77 @@ router.get("/groupInfo", async (req, res) => {
     } catch (error) {
         console.error("Error fetching group info:", error);
         res.status(500).json({ error: "Internal Server Error : " , error });
+    }
+});
+
+router.get("/personalExpense", async (req, res) => {
+    try {
+        const { user_id } = req.query;
+
+        if (!user_id) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+
+        const query = `
+            SELECT 
+                e.id AS expense_id,
+                TO_CHAR(e.created_at, 'HH24:MI') AS time,
+                TO_CHAR(e.created_at, 'DD/MM/YYYY') AS date,
+                u.id AS user_id,
+                u.username,
+                u.name AS userFullName,
+                e.amount AS "Amount",
+                COALESCE(s.per_share, 0) AS "My Share",
+                e.group_id,
+                g.group_name AS groupName,
+                e.chat_id
+            FROM expenses e
+            LEFT JOIN splits s ON e.id = s.expense_id AND s.user_id = $1
+            JOIN users u ON e.paid_by = u.id
+            JOIN groups g ON e.group_id = g.id
+            WHERE e.paid_by = $1 OR s.user_id = $1
+            ORDER BY e.created_at DESC;
+        `;
+
+        const rows = await pool.query(query, [user_id]);
+
+        res.json(rows.rows);
+    } catch (error) {
+        console.error("Error fetching personal expense history:", error);
+        res.status(500).json({ error: "Internal Server Error: " + error.message });
+    }
+});
+
+
+router.get("/oweDetails", async (req, res) => {
+    try {
+        const { user_id } = req.query;
+        if (!user_id) {
+            return res.status(400).json({ error: "user_id is required" });
+        }
+
+        const query = `
+            WITH amount_owed AS (
+                SELECT COALESCE(SUM(per_share), 0) AS owes_others
+                FROM splits s
+                JOIN expenses e ON s.expense_id = e.id
+                WHERE s.user_id = $1 AND e.paid_by <> $1
+            ),
+            amount_to_get AS (
+                SELECT COALESCE(SUM(per_share), 0) AS others_owe
+                FROM splits s
+                JOIN expenses e ON s.expense_id = e.id
+                WHERE e.paid_by = $1 AND s.user_id <> $1
+            )
+            SELECT owes_others, others_owe FROM amount_owed, amount_to_get;
+        `;
+
+        const { rows } = await pool.query(query, [user_id]);
+        res.json(rows[0]); // Returns { owes_others: 1500.00, others_owe: 2000.00 }
+        
+    } catch (error) {
+        console.error("Error fetching user balance:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
