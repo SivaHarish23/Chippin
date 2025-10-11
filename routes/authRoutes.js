@@ -69,33 +69,45 @@ router.post("/verify", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
-    const { name, email, username, password, otp } = req.body;
-    if (!otpStore[email]) {
-        return res.status(410).json({ message: "OTP expired. Request a new one." });
-    }
-    const { otp: storedOtp, expiry, attempts } = otpStore[email];
-    if (Date.now() > expiry) {
-        delete otpStore[email];
-        return res.status(410).json({ message: "OTP expired. Request a new one." });
-    }
-    if (attempts >= 5) {
-        delete otpStore[email];
-        return res.status(410).json({ message: "Too many failed attempts. Request a new OTP." });
-    }
-    if (otp !== storedOtp) {
-        otpStore[email].attempts += 1;
-        return res.status(401).json({ message: `Invalid OTP. ${5 - otpStore[email].attempts} attempts left.` });
-    }
+    const { name, email, username, password } = req.body;
+    // if (!otpStore[email]) {
+    //     return res.status(410).json({ message: "OTP expired. Request a new one." });
+    // }
+    // const { otp: storedOtp, expiry, attempts } = otpStore[email];
+    // if (Date.now() > expiry) {
+    //     delete otpStore[email];
+    //     return res.status(410).json({ message: "OTP expired. Request a new one." });
+    // }
+    // if (attempts >= 5) {
+    //     delete otpStore[email];
+    //     return res.status(410).json({ message: "Too many failed attempts. Request a new OTP." });
+    // }
+    // if (otp !== storedOtp) {
+    //     otpStore[email].attempts += 1;
+    //     return res.status(401).json({ message: `Invalid OTP. ${5 - otpStore[email].attempts} attempts left.` });
+    // }
     try {
+        const resultUser = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+        if (resultUser.rows.length > 0) {
+            console.log("Error: Username already exists!");
+            return res.status(409).json({ message: "Username already exists!" });
+        }
+        const resultEmail = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+        if (resultEmail.rows.length > 0) {
+            console.log("Error: Username already exists!");
+            return res.status(409).json({ message: "Email already exists!" });
+        }
+        console.log("Username and Email are available.");
+
         const userResult = await pool.query("INSERT INTO users (name, email, username, password, created_at) VALUES ($1 , $2 , $3 , $4 , NOW())", [name, email, username, password]);
         console.log("User inserted!");
-        delete otpStore[email]; // Clear OTP after successful verification
+        // delete otpStore[email]; // Clear OTP after successful verification
         res.status(200).json({ message: "User Registered" });
     } catch (error) {
         console.error("Error during Signing up:", error);
         res.status(500).json({ message: error });
     }
-    delete otpStore[email]; // Clear OTP after successful registration
+    // delete otpStore[email]; // Clear OTP after successful registration
 });
 
 router.post("/forgotPassword" , async (req , res) => {
