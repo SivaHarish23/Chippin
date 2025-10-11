@@ -76,6 +76,13 @@ async function sendOTP(email) {
     };
 
     await transporter.sendMail(mailOptions);
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ OTP sent to ${email}: ${otp}`);
+    } catch (err) {
+        console.log("❌ Error sending OTP email:", err);
+    }
+    
 
     const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes expiry
     otpStore[email] = { otp, expiry, attempts: 0 };

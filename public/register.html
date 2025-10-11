@@ -134,21 +134,26 @@
                     clearInterval(interval);
                     alert("Registration successful!");
                     window.location.href = 'login.html';
-                } else if (response.status === 410) {
+                } 
+                else if (response.status === 410) {
                     // OTP expired
                     alert("OTP expired. Request a new one.");
                     document.getElementById("otp").value = "";
                     document.getElementById("otp").style.display = "none";
                     document.getElementById("registerBtn").style.display = "none";
-                } else if (response.status === 401) {
+                } 
+                else if (response.status === 401) {
                     // Incorrect OTP
                     alert(data.message);
                     document.getElementById("otp").value = "";
-                } else {
+                } 
+                else {
+                    console.log(data.message);
                     alert(data.message);
                 }
             } catch (error) {
                 alert("Error connecting to server.");
+                console.log(error);
             } finally {
                 hideLoading(); // Hide loading screen
             }

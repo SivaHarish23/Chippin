@@ -3,6 +3,7 @@ let currentUserName = null;
 let currentUserFullName = null;
 let currentGroupId = null;
 let groupMembers = null;
+let splitType = 'none';
 document.addEventListener("DOMContentLoaded", async function () {
 
     currentUserId = sessionStorage.getItem("userId");
@@ -50,6 +51,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             groupMembers = await response.json();
 
             console.log(groupMembers);
+            generateSplitTable(splitType);
 
         } catch (error) {
             console.error("Error fetching groups members:", error);
@@ -61,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     document.querySelectorAll('input[name="splitType"]').forEach(radio => {
         radio.addEventListener('change', function () {
-            const splitType = this.value;
+            splitType = this.value;
             document.getElementById('splitTableContainer').classList.toggle('hidden', splitType === 'none');
             generateSplitTable(splitType);
         });
