@@ -75,7 +75,8 @@ async function sendOTP(email) {
         html: emailTemplate,
     };
 
-    await transporter.sendMail(mailOptions);
+
+    console.log(`about to send OTP sent to ${email}`);
     try {
         await transporter.sendMail(mailOptions);
         console.log(`✅ OTP sent to ${email}: ${otp}`);
