@@ -84,18 +84,35 @@
             messageInfo.appendChild(time);
             messageDiv.appendChild(messageInfo);
 
-            // Add long-press event listener for deletion
+            // event listener for deletion
             if (type === "sent") {
+                // LONG PRESS
                 messageDiv.addEventListener("contextmenu", (event) => {
                     event.preventDefault();
                     handleLongPress(messageDiv);
                 });
+                // DOUBLE TAP
+                addDoubleTapListener(messageDiv, handleLongPress);
             }
 
             chatBox.appendChild(messageDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
 
 
+        }
+        function addDoubleTapListener(element, callback, maxDelay = 300) {
+            let lastTap = 0;
+
+            element.addEventListener("touchend", (e) => {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+
+                if (tapLength < maxDelay && tapLength > 0) {
+                    callback(element); // Double-tap detected
+                }
+
+                lastTap = currentTime;
+            });
         }
 
         function handleLongPress(messageDiv) {
