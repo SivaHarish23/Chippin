@@ -99,9 +99,11 @@
                     passwordEle.readOnly = true;
                 } else {
                     alert(data.message);
+                    console.log(data.message);
                 }
             } catch (error) {
                 alert("Error contacting server. Please try again.");
+                console.log(error);
             } finally {
                 hideLoading(); // Hide loading screen
             }
